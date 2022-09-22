@@ -12,13 +12,13 @@ import "github.com/go-coldbrew/options"
 
 - [func AddToOptions(ctx context.Context, key string, value interface{}) context.Context](<#func-addtooptions>)
 - [type Options](<#type-options>)
-  - [func FromContext(ctx context.Context) Options](<#func-fromcontext>)
+  - [func FromContext(ctx context.Context) *Options](<#func-fromcontext>)
   - [func (o Options) Add(key string, value interface{})](<#func-options-add>)
   - [func (o Options) Del(key string)](<#func-options-del>)
   - [func (o Options) Get(key string) (interface{}, bool)](<#func-options-get>)
 
 
-## func [AddToOptions](<https://github.com/go-coldbrew/options/blob/main/options.go#L28>)
+## func [AddToOptions](<https://github.com/go-coldbrew/options/blob/main/options.go#L31>)
 
 ```go
 func AddToOptions(ctx context.Context, key string, value interface{}) context.Context
@@ -26,23 +26,25 @@ func AddToOptions(ctx context.Context, key string, value interface{}) context.Co
 
 AddToOptions adds options to context
 
-## type [Options](<https://github.com/go-coldbrew/options/blob/main/options.go#L15>)
+## type [Options](<https://github.com/go-coldbrew/options/blob/main/options.go#L16-L18>)
 
 Options are request options passed from Orion to server
 
 ```go
-type Options map[string]interface{}
+type Options struct {
+    sync.Map
+}
 ```
 
-### func [FromContext](<https://github.com/go-coldbrew/options/blob/main/options.go#L18>)
+### func [FromContext](<https://github.com/go-coldbrew/options/blob/main/options.go#L21>)
 
 ```go
-func FromContext(ctx context.Context) Options
+func FromContext(ctx context.Context) *Options
 ```
 
 FromContext fetchs options from provided context
 
-### func \(Options\) [Add](<https://github.com/go-coldbrew/options/blob/main/options.go#L41>)
+### func \(Options\) [Add](<https://github.com/go-coldbrew/options/blob/main/options.go#L44>)
 
 ```go
 func (o Options) Add(key string, value interface{})
@@ -50,7 +52,7 @@ func (o Options) Add(key string, value interface{})
 
 Add to Options
 
-### func \(Options\) [Del](<https://github.com/go-coldbrew/options/blob/main/options.go#L46>)
+### func \(Options\) [Del](<https://github.com/go-coldbrew/options/blob/main/options.go#L49>)
 
 ```go
 func (o Options) Del(key string)
@@ -58,7 +60,7 @@ func (o Options) Del(key string)
 
 Del an options
 
-### func \(Options\) [Get](<https://github.com/go-coldbrew/options/blob/main/options.go#L51>)
+### func \(Options\) [Get](<https://github.com/go-coldbrew/options/blob/main/options.go#L54>)
 
 ```go
 func (o Options) Get(key string) (interface{}, bool)
