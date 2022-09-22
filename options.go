@@ -42,7 +42,7 @@ func AddToOptions(ctx context.Context, key string, value interface{}) context.Co
 
 // Add to Options
 func (o Options) Add(key string, value interface{}) {
-	o.Add(key, value)
+	o.Store(key, value)
 }
 
 // Del an options
