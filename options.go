@@ -41,17 +41,20 @@ func AddToOptions(ctx context.Context, key string, value interface{}) context.Co
 }
 
 // Add to Options
-func (o Options) Add(key string, value interface{}) {
+func (o *Options) Add(key string, value interface{}) {
 	o.Store(key, value)
 }
 
 // Del an options
-func (o Options) Del(key string) {
+func (o *Options) Del(key string) {
 	o.Delete(key)
 }
 
 // Get an options
-func (o Options) Get(key string) (interface{}, bool) {
+func (o *Options) Get(key string) (interface{}, bool) {
+	if o == nil {
+		return nil, false
+	}
 	value, found := o.Load(strings.ToLower(key))
 	return value, found
 }
