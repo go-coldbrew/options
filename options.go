@@ -2,7 +2,6 @@ package options
 
 import (
 	"context"
-	"strings"
 	"sync"
 )
 
@@ -55,6 +54,6 @@ func (o *Options) Get(key string) (interface{}, bool) {
 	if o == nil {
 		return nil, false
 	}
-	value, found := o.Load(strings.ToLower(key))
+	value, found := o.Load(key)
 	return value, found
 }
