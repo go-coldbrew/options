@@ -18,17 +18,17 @@ import "github.com/go-coldbrew/options"
   - [func (o *Options) Get(key string) (interface{}, bool)](<#func-options-get>)
 
 
-## func [AddToOptions](<https://github.com/go-coldbrew/options/blob/main/options.go#L30>)
+## func [AddToOptions](<https://github.com/go-coldbrew/options/blob/main/options.go#L32>)
 
 ```go
 func AddToOptions(ctx context.Context, key string, value interface{}) context.Context
 ```
 
-AddToOptions adds options to context
+AddToOptions adds options to context if no options found, create a new one and adds the provided options to it and returns the new context
 
 ## type [Options](<https://github.com/go-coldbrew/options/blob/main/options.go#L15-L17>)
 
-Options are request options passed from Orion to server
+Options are request options passed from ColdBrew to server
 
 ```go
 type Options struct {
@@ -36,37 +36,37 @@ type Options struct {
 }
 ```
 
-### func [FromContext](<https://github.com/go-coldbrew/options/blob/main/options.go#L20>)
+### func [FromContext](<https://github.com/go-coldbrew/options/blob/main/options.go#L21>)
 
 ```go
 func FromContext(ctx context.Context) *Options
 ```
 
-FromContext fetchs options from provided context
+FromContext fetchs options from provided context if no options found, return nil
 
-### func \(\*Options\) [Add](<https://github.com/go-coldbrew/options/blob/main/options.go#L43>)
+### func \(\*Options\) [Add](<https://github.com/go-coldbrew/options/blob/main/options.go#L46>)
 
 ```go
 func (o *Options) Add(key string, value interface{})
 ```
 
-Add to Options
+Add to Options can be used to add options to context
 
-### func \(\*Options\) [Del](<https://github.com/go-coldbrew/options/blob/main/options.go#L48>)
+### func \(\*Options\) [Del](<https://github.com/go-coldbrew/options/blob/main/options.go#L52>)
 
 ```go
 func (o *Options) Del(key string)
 ```
 
-Del an options
+Del an options can be used to delete options from context
 
-### func \(\*Options\) [Get](<https://github.com/go-coldbrew/options/blob/main/options.go#L53>)
+### func \(\*Options\) [Get](<https://github.com/go-coldbrew/options/blob/main/options.go#L58>)
 
 ```go
 func (o *Options) Get(key string) (interface{}, bool)
 ```
 
-Get an options
+Get an options can be used to get options from context
 
 
 
