@@ -29,7 +29,7 @@ func FromContext(ctx context.Context) *Options {
 
 // AddToOptions adds options to context
 // if no options found, create a new one and adds the provided options to it and returns the new context
-func AddToOptions(ctx context.Context, key string, value interface{}) context.Context {
+func AddToOptions(ctx context.Context, key string, value any) context.Context {
 	h := FromContext(ctx)
 	if h == nil {
 		ctx = context.WithValue(ctx, optionsKey, new(Options))
@@ -43,7 +43,7 @@ func AddToOptions(ctx context.Context, key string, value interface{}) context.Co
 
 // Add to Options
 // can be used to add options to context
-func (o *Options) Add(key string, value interface{}) {
+func (o *Options) Add(key string, value any) {
 	o.Store(key, value)
 }
 
@@ -55,7 +55,7 @@ func (o *Options) Del(key string) {
 
 // Get an options
 // can be used to get options from context
-func (o *Options) Get(key string) (interface{}, bool) {
+func (o *Options) Get(key string) (any, bool) {
 	if o == nil {
 		return nil, false
 	}
