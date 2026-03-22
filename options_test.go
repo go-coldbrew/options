@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOptions(t *testing.T) {
@@ -33,13 +34,14 @@ func TestEmptyKeyIgnored(t *testing.T) {
 
 	// AddToOptions with empty key should not store an entry
 	ctx = AddToOptions(ctx, "", "should-not-store")
-	options := FromContext(ctx)
-	assert.NotNil(t, options, "options should be initialized")
-	_, found := options.Get("")
+	opts := FromContext(ctx)
+	require.NotNil(t, opts, "options should be initialized")
+	_, found := opts.Get("")
 	assert.False(t, found, "empty key should not be retrievable via AddToOptions")
 
-	// Direct Add with empty key should not store an entry
-	options.Add("", "also-should-not-store")
-	_, found = options.Get("")
+	// Direct Add on a standalone Options should also ignore empty keys
+	standalone := new(Options)
+	standalone.Add("", "also-should-not-store")
+	_, found = standalone.Get("")
 	assert.False(t, found, "empty key should not be retrievable via Add")
 }

@@ -41,8 +41,8 @@ func AddToOptions(ctx context.Context, key string, value any) context.Context {
 	return ctx
 }
 
-// Add to Options
-// can be used to add options to context
+// Add adds a key-value pair to Options.
+// Empty keys are silently ignored.
 func (o *Options) Add(key string, value any) {
 	if key == "" {
 		return
