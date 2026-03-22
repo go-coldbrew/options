@@ -44,6 +44,9 @@ func AddToOptions(ctx context.Context, key string, value any) context.Context {
 // Add to Options
 // can be used to add options to context
 func (o *Options) Add(key string, value any) {
+	if key == "" {
+		return
+	}
 	o.Store(key, value)
 }
 
