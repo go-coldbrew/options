@@ -93,7 +93,7 @@ type Options struct {
 func FromContext(ctx context.Context) *Options
 ```
 
-FromContext fetchs options from provided context if no options found, return nil
+FromContext fetches options from provided context. If no options are found, it returns nil.
 
 <details><summary>Example</summary>
 <p>
@@ -113,17 +113,16 @@ import (
 func main() {
 	ctx := context.Background()
 
-	// Without any options set, FromContext returns an empty Options
+	// Without any options set, FromContext returns nil
 	opts := options.FromContext(ctx)
-	_, found := opts.Get("missing-key")
-	fmt.Println("found:", found)
+	fmt.Println("opts:", opts)
 }
 ```
 
 #### Output
 
 ```
-found: false
+opts: <nil>
 ```
 
 </p>

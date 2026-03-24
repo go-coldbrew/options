@@ -30,9 +30,8 @@ func ExampleAddToOptions() {
 func ExampleFromContext() {
 	ctx := context.Background()
 
-	// Without any options set, FromContext returns an empty Options
+	// Without any options set, FromContext returns nil
 	opts := options.FromContext(ctx)
-	_, found := opts.Get("missing-key")
-	fmt.Println("found:", found)
-	// Output: found: false
+	fmt.Println("opts:", opts)
+	// Output: opts: <nil>
 }
