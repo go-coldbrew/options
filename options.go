@@ -16,8 +16,8 @@ type Options struct {
 	sync.Map
 }
 
-// FromContext fetchs options from provided context
-// if no options found, return nil
+// FromContext fetches options from provided context.
+// If no options are found, it returns nil.
 func FromContext(ctx context.Context) *Options {
 	if h := ctx.Value(optionsKey); h != nil {
 		if options, ok := h.(*Options); ok {

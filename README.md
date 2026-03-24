@@ -32,6 +32,49 @@ func AddToOptions(ctx context.Context, key string, value any) context.Context
 
 AddToOptions adds options to context if no options found, create a new one and adds the provided options to it and returns the new context
 
+<details><summary>Example</summary>
+<p>
+
+
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/go-coldbrew/options"
+)
+
+func main() {
+	ctx := context.Background()
+
+	// Add request-scoped metadata to context
+	ctx = options.AddToOptions(ctx, "tenant", "acme-corp")
+	ctx = options.AddToOptions(ctx, "region", "us-west-2")
+
+	// Retrieve values downstream
+	opts := options.FromContext(ctx)
+	if tenant, ok := opts.Get("tenant"); ok {
+		fmt.Println("tenant:", tenant)
+	}
+	if region, ok := opts.Get("region"); ok {
+		fmt.Println("region:", region)
+	}
+}
+```
+
+#### Output
+
+```
+tenant: acme-corp
+region: us-west-2
+```
+
+</p>
+</details>
+
 <a name="Options"></a>
 ## type [Options](<https://github.com/go-coldbrew/options/blob/main/options.go#L15-L17>)
 
@@ -50,7 +93,40 @@ type Options struct {
 func FromContext(ctx context.Context) *Options
 ```
 
-FromContext fetchs options from provided context if no options found, return nil
+FromContext fetches options from provided context. If no options are found, it returns nil.
+
+<details><summary>Example</summary>
+<p>
+
+
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/go-coldbrew/options"
+)
+
+func main() {
+	ctx := context.Background()
+
+	// Without any options set, FromContext returns nil
+	opts := options.FromContext(ctx)
+	fmt.Println("opts:", opts)
+}
+```
+
+#### Output
+
+```
+opts: <nil>
+```
+
+</p>
+</details>
 
 <a name="Options.Add"></a>
 ### func \(\*Options\) [Add](<https://github.com/go-coldbrew/options/blob/main/options.go#L46>)
