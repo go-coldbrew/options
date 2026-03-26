@@ -5,6 +5,10 @@ import (
 	"sync"
 )
 
+// SupportPackageIsVersion1 is a compile-time assertion constant.
+// Downstream packages reference this to enforce version compatibility.
+const SupportPackageIsVersion1 = true
+
 type contextKey string
 
 var (
