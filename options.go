@@ -15,9 +15,17 @@ var (
 	optionsKey contextKey = "ColdBrewOptions"
 )
 
-// Options are request options passed from ColdBrew to server
+// Options are request options passed from ColdBrew to server.
+// Uses RWMutex + map instead of sync.Map since Options is per-request
+// and never shared across goroutines.
 type Options struct {
-	sync.Map
+	mu sync.RWMutex
+	m  map[string]any
+}
+
+// newOptions creates an Options with an initialized map.
+func newOptions() *Options {
+	return &Options{m: make(map[string]any, 2)}
 }
 
 // FromContext fetches options from provided context.
@@ -36,10 +44,10 @@ func FromContext(ctx context.Context) *Options {
 func AddToOptions(ctx context.Context, key string, value any) context.Context {
 	h := FromContext(ctx)
 	if h == nil {
-		ctx = context.WithValue(ctx, optionsKey, new(Options))
-		h = FromContext(ctx)
+		h = newOptions()
+		ctx = context.WithValue(ctx, optionsKey, h)
 	}
-	if h != nil && key != "" {
+	if key != "" {
 		h.Add(key, value)
 	}
 	return ctx
@@ -51,21 +59,59 @@ func (o *Options) Add(key string, value any) {
 	if key == "" {
 		return
 	}
-	o.Store(key, value)
+	o.mu.Lock()
+	o.m[key] = value
+	o.mu.Unlock()
 }
 
-// Del an options
-// can be used to delete options from context
+// Del deletes an option by key.
 func (o *Options) Del(key string) {
-	o.Delete(key)
+	o.mu.Lock()
+	delete(o.m, key)
+	o.mu.Unlock()
 }
 
-// Get an options
-// can be used to get options from context
+// Get retrieves an option value by key.
 func (o *Options) Get(key string) (any, bool) {
 	if o == nil {
 		return nil, false
 	}
-	value, found := o.Load(key)
-	return value, found
+	o.mu.RLock()
+	v, found := o.m[key]
+	o.mu.RUnlock()
+	return v, found
+}
+
+// Store is a sync.Map-compatible alias for Add.
+func (o *Options) Store(key, value any) {
+	if k, ok := key.(string); ok {
+		o.Add(k, value)
+	}
+}
+
+// Load is a sync.Map-compatible alias for Get.
+func (o *Options) Load(key any) (any, bool) {
+	if k, ok := key.(string); ok {
+		return o.Get(k)
+	}
+	return nil, false
+}
+
+// Delete is a sync.Map-compatible alias for Del.
+func (o *Options) Delete(key any) {
+	if k, ok := key.(string); ok {
+		o.Del(k)
+	}
+}
+
+// Range calls f sequentially for each key and value.
+// If f returns false, Range stops the iteration.
+func (o *Options) Range(f func(key, value any) bool) {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+	for k, v := range o.m {
+		if !f(k, v) {
+			break
+		}
+	}
 }
