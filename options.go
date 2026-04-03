@@ -118,6 +118,10 @@ func (o *Options) Delete(key any) {
 // The callback may safely call Add/Del on the same Options instance.
 func (o *Options) Range(f func(key, value any) bool) {
 	o.mu.RLock()
+	if len(o.m) == 0 {
+		o.mu.RUnlock()
+		return
+	}
 	snapshot := make(map[string]any, len(o.m))
 	for k, v := range o.m {
 		snapshot[k] = v
