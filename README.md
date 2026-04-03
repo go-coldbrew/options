@@ -15,22 +15,35 @@ import "github.com/go-coldbrew/options"
 
 ## Index
 
+- [Constants](<#constants>)
 - [func AddToOptions\(ctx context.Context, key string, value any\) context.Context](<#AddToOptions>)
 - [type Options](<#Options>)
   - [func FromContext\(ctx context.Context\) \*Options](<#FromContext>)
   - [func \(o \*Options\) Add\(key string, value any\)](<#Options.Add>)
   - [func \(o \*Options\) Del\(key string\)](<#Options.Del>)
+  - [func \(o \*Options\) Delete\(key any\)](<#Options.Delete>)
   - [func \(o \*Options\) Get\(key string\) \(any, bool\)](<#Options.Get>)
+  - [func \(o \*Options\) Load\(key any\) \(any, bool\)](<#Options.Load>)
+  - [func \(o \*Options\) Range\(f func\(key, value any\) bool\)](<#Options.Range>)
+  - [func \(o \*Options\) Store\(key, value any\)](<#Options.Store>)
 
+
+## Constants
+
+<a name="SupportPackageIsVersion1"></a>SupportPackageIsVersion1 is a compile\-time assertion constant. Downstream packages reference this to enforce version compatibility.
+
+```go
+const SupportPackageIsVersion1 = true
+```
 
 <a name="AddToOptions"></a>
-## func [AddToOptions](<https://github.com/go-coldbrew/options/blob/main/options.go#L32>)
+## func [AddToOptions](<https://github.com/go-coldbrew/options/blob/main/options.go#L40>)
 
 ```go
 func AddToOptions(ctx context.Context, key string, value any) context.Context
 ```
 
-AddToOptions adds options to context if no options found, create a new one and adds the provided options to it and returns the new context
+AddToOptions adds a key\-value pair to the Options stored in ctx. If no Options exists in the context, a new one is created. Empty keys are silently ignored and do not allocate.
 
 <details><summary>Example</summary>
 <p>
@@ -76,18 +89,18 @@ region: us-west-2
 </details>
 
 <a name="Options"></a>
-## type [Options](<https://github.com/go-coldbrew/options/blob/main/options.go#L15-L17>)
+## type [Options](<https://github.com/go-coldbrew/options/blob/main/options.go#L21-L24>)
 
-Options are request options passed from ColdBrew to server
+Options are request options passed from ColdBrew to server. Uses RWMutex \+ map instead of sync.Map since Options is per\-request and never shared across goroutines.
 
 ```go
 type Options struct {
-    sync.Map
+    // contains filtered or unexported fields
 }
 ```
 
 <a name="FromContext"></a>
-### func [FromContext](<https://github.com/go-coldbrew/options/blob/main/options.go#L21>)
+### func [FromContext](<https://github.com/go-coldbrew/options/blob/main/options.go#L28>)
 
 ```go
 func FromContext(ctx context.Context) *Options
@@ -129,7 +142,7 @@ opts: <nil>
 </details>
 
 <a name="Options.Add"></a>
-### func \(\*Options\) [Add](<https://github.com/go-coldbrew/options/blob/main/options.go#L46>)
+### func \(\*Options\) [Add](<https://github.com/go-coldbrew/options/blob/main/options.go#L55>)
 
 ```go
 func (o *Options) Add(key string, value any)
@@ -138,21 +151,57 @@ func (o *Options) Add(key string, value any)
 Add adds a key\-value pair to Options. Empty keys are silently ignored.
 
 <a name="Options.Del"></a>
-### func \(\*Options\) [Del](<https://github.com/go-coldbrew/options/blob/main/options.go#L55>)
+### func \(\*Options\) [Del](<https://github.com/go-coldbrew/options/blob/main/options.go#L68>)
 
 ```go
 func (o *Options) Del(key string)
 ```
 
-Del an options can be used to delete options from context
+Del deletes an option by key.
+
+<a name="Options.Delete"></a>
+### func \(\*Options\) [Delete](<https://github.com/go-coldbrew/options/blob/main/options.go#L110>)
+
+```go
+func (o *Options) Delete(key any)
+```
+
+Delete is a sync.Map\-compatible alias for Del. Only string keys are supported; non\-string keys are silently ignored.
 
 <a name="Options.Get"></a>
-### func \(\*Options\) [Get](<https://github.com/go-coldbrew/options/blob/main/options.go#L61>)
+### func \(\*Options\) [Get](<https://github.com/go-coldbrew/options/blob/main/options.go#L77>)
 
 ```go
 func (o *Options) Get(key string) (any, bool)
 ```
 
-Get an options can be used to get options from context
+Get retrieves an option value by key.
+
+<a name="Options.Load"></a>
+### func \(\*Options\) [Load](<https://github.com/go-coldbrew/options/blob/main/options.go#L101>)
+
+```go
+func (o *Options) Load(key any) (any, bool)
+```
+
+Load is a sync.Map\-compatible alias for Get. Only string keys are supported; non\-string keys return \(nil, false\).
+
+<a name="Options.Range"></a>
+### func \(\*Options\) [Range](<https://github.com/go-coldbrew/options/blob/main/options.go#L119>)
+
+```go
+func (o *Options) Range(f func(key, value any) bool)
+```
+
+Range calls f sequentially for each key and value. If f returns false, Range stops the iteration. The callback may safely call Add/Del on the same Options instance.
+
+<a name="Options.Store"></a>
+### func \(\*Options\) [Store](<https://github.com/go-coldbrew/options/blob/main/options.go#L93>)
+
+```go
+func (o *Options) Store(key, value any)
+```
+
+Store is a sync.Map\-compatible alias for Add. Only string keys are supported; non\-string keys are silently ignored.
 
 Generated by [gomarkdoc](<https://github.com/princjef/gomarkdoc>)
