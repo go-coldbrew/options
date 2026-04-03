@@ -23,11 +23,6 @@ type Options struct {
 	m  map[string]any
 }
 
-// newOptions creates an Options with an initialized map.
-func newOptions() *Options {
-	return &Options{m: make(map[string]any, 2)}
-}
-
 // FromContext fetches options from provided context.
 // If no options are found, it returns nil.
 func FromContext(ctx context.Context) *Options {
@@ -39,17 +34,19 @@ func FromContext(ctx context.Context) *Options {
 	return nil
 }
 
-// AddToOptions adds options to context
-// if no options found, create a new one and adds the provided options to it and returns the new context
+// AddToOptions adds a key-value pair to the Options stored in ctx.
+// If no Options exists in the context, a new one is created.
+// Empty keys are silently ignored and do not allocate.
 func AddToOptions(ctx context.Context, key string, value any) context.Context {
+	if key == "" {
+		return ctx
+	}
 	h := FromContext(ctx)
 	if h == nil {
-		h = newOptions()
+		h = &Options{}
 		ctx = context.WithValue(ctx, optionsKey, h)
 	}
-	if key != "" {
-		h.Add(key, value)
-	}
+	h.Add(key, value)
 	return ctx
 }
 
@@ -92,6 +89,7 @@ func (o *Options) Get(key string) (any, bool) {
 }
 
 // Store is a sync.Map-compatible alias for Add.
+// Only string keys are supported; non-string keys are silently ignored.
 func (o *Options) Store(key, value any) {
 	if k, ok := key.(string); ok {
 		o.Add(k, value)
@@ -99,6 +97,7 @@ func (o *Options) Store(key, value any) {
 }
 
 // Load is a sync.Map-compatible alias for Get.
+// Only string keys are supported; non-string keys return (nil, false).
 func (o *Options) Load(key any) (any, bool) {
 	if k, ok := key.(string); ok {
 		return o.Get(k)
@@ -107,6 +106,7 @@ func (o *Options) Load(key any) (any, bool) {
 }
 
 // Delete is a sync.Map-compatible alias for Del.
+// Only string keys are supported; non-string keys are silently ignored.
 func (o *Options) Delete(key any) {
 	if k, ok := key.(string); ok {
 		o.Del(k)
