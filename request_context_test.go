@@ -48,14 +48,14 @@ func TestRequestContext_LogFieldsFirst(t *testing.T) {
 	assert.NotNil(t, rc.logFields)
 }
 
-func TestRequestContext_LazyInit(t *testing.T) {
+func TestRequestContext_EagerInit(t *testing.T) {
 	ctx := context.Background()
 	ctx = AddToOptions(ctx, "k", "v")
 
 	rc := RequestContextFromContext(ctx)
 	require.NotNil(t, rc)
 	assert.NotNil(t, rc.opts, "opts should be initialized")
-	assert.Nil(t, rc.logFields, "logFields should be nil until used")
+	assert.NotNil(t, rc.logFields, "logFields should be eagerly initialized")
 }
 
 func TestRequestContext_EmptyContext(t *testing.T) {
