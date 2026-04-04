@@ -16,16 +16,23 @@ import "github.com/go-coldbrew/options"
 ## Index
 
 - [Constants](<#constants>)
+- [func AddToLogFields\(ctx context.Context, key string, value any\) context.Context](<#AddToLogFields>)
 - [func AddToOptions\(ctx context.Context, key string, value any\) context.Context](<#AddToOptions>)
 - [type Options](<#Options>)
   - [func FromContext\(ctx context.Context\) \*Options](<#FromContext>)
+  - [func LogFieldsFromContext\(ctx context.Context\) \*Options](<#LogFieldsFromContext>)
   - [func \(o \*Options\) Add\(key string, value any\)](<#Options.Add>)
   - [func \(o \*Options\) Del\(key string\)](<#Options.Del>)
   - [func \(o \*Options\) Delete\(key any\)](<#Options.Delete>)
   - [func \(o \*Options\) Get\(key string\) \(any, bool\)](<#Options.Get>)
   - [func \(o \*Options\) Load\(key any\) \(any, bool\)](<#Options.Load>)
   - [func \(o \*Options\) Range\(f func\(key, value any\) bool\)](<#Options.Range>)
+  - [func \(o \*Options\) RangeSlice\(f func\(key, value any\) bool\)](<#Options.RangeSlice>)
   - [func \(o \*Options\) Store\(key, value any\)](<#Options.Store>)
+- [type RequestContext](<#RequestContext>)
+  - [func RequestContextFromContext\(ctx context.Context\) \*RequestContext](<#RequestContextFromContext>)
+  - [func \(rc \*RequestContext\) LogFields\(\) \*Options](<#RequestContext.LogFields>)
+  - [func \(rc \*RequestContext\) Opts\(\) \*Options](<#RequestContext.Opts>)
 
 
 ## Constants
@@ -36,8 +43,17 @@ import "github.com/go-coldbrew/options"
 const SupportPackageIsVersion1 = true
 ```
 
+<a name="AddToLogFields"></a>
+## func [AddToLogFields](<https://github.com/go-coldbrew/options/blob/main/request_context.go#L50>)
+
+```go
+func AddToLogFields(ctx context.Context, key string, value any) context.Context
+```
+
+AddToLogFields adds a key\-value pair to the log fields stored in ctx. If ctx is nil, context.Background\(\) is used.
+
 <a name="AddToOptions"></a>
-## func [AddToOptions](<https://github.com/go-coldbrew/options/blob/main/options.go#L40>)
+## func [AddToOptions](<https://github.com/go-coldbrew/options/blob/main/options.go#L35>)
 
 ```go
 func AddToOptions(ctx context.Context, key string, value any) context.Context
@@ -89,7 +105,7 @@ region: us-west-2
 </details>
 
 <a name="Options"></a>
-## type [Options](<https://github.com/go-coldbrew/options/blob/main/options.go#L21-L24>)
+## type [Options](<https://github.com/go-coldbrew/options/blob/main/options.go#L18-L21>)
 
 Options are request options passed from ColdBrew to server. Uses RWMutex \+ map instead of sync.Map since Options is per\-request and never shared across goroutines.
 
@@ -100,7 +116,7 @@ type Options struct {
 ```
 
 <a name="FromContext"></a>
-### func [FromContext](<https://github.com/go-coldbrew/options/blob/main/options.go#L28>)
+### func [FromContext](<https://github.com/go-coldbrew/options/blob/main/options.go#L25>)
 
 ```go
 func FromContext(ctx context.Context) *Options
@@ -141,8 +157,17 @@ opts: <nil>
 </p>
 </details>
 
+<a name="LogFieldsFromContext"></a>
+### func [LogFieldsFromContext](<https://github.com/go-coldbrew/options/blob/main/request_context.go#L64>)
+
+```go
+func LogFieldsFromContext(ctx context.Context) *Options
+```
+
+LogFieldsFromContext retrieves the log fields Options from context. Returns nil if not present.
+
 <a name="Options.Add"></a>
-### func \(\*Options\) [Add](<https://github.com/go-coldbrew/options/blob/main/options.go#L55>)
+### func \(\*Options\) [Add](<https://github.com/go-coldbrew/options/blob/main/options.go#L46>)
 
 ```go
 func (o *Options) Add(key string, value any)
@@ -151,7 +176,7 @@ func (o *Options) Add(key string, value any)
 Add adds a key\-value pair to Options. Empty keys are silently ignored.
 
 <a name="Options.Del"></a>
-### func \(\*Options\) [Del](<https://github.com/go-coldbrew/options/blob/main/options.go#L68>)
+### func \(\*Options\) [Del](<https://github.com/go-coldbrew/options/blob/main/options.go#L59>)
 
 ```go
 func (o *Options) Del(key string)
@@ -160,7 +185,7 @@ func (o *Options) Del(key string)
 Del deletes an option by key.
 
 <a name="Options.Delete"></a>
-### func \(\*Options\) [Delete](<https://github.com/go-coldbrew/options/blob/main/options.go#L110>)
+### func \(\*Options\) [Delete](<https://github.com/go-coldbrew/options/blob/main/options.go#L101>)
 
 ```go
 func (o *Options) Delete(key any)
@@ -169,7 +194,7 @@ func (o *Options) Delete(key any)
 Delete is a sync.Map\-compatible alias for Del. Only string keys are supported; non\-string keys are silently ignored.
 
 <a name="Options.Get"></a>
-### func \(\*Options\) [Get](<https://github.com/go-coldbrew/options/blob/main/options.go#L77>)
+### func \(\*Options\) [Get](<https://github.com/go-coldbrew/options/blob/main/options.go#L68>)
 
 ```go
 func (o *Options) Get(key string) (any, bool)
@@ -178,7 +203,7 @@ func (o *Options) Get(key string) (any, bool)
 Get retrieves an option value by key.
 
 <a name="Options.Load"></a>
-### func \(\*Options\) [Load](<https://github.com/go-coldbrew/options/blob/main/options.go#L101>)
+### func \(\*Options\) [Load](<https://github.com/go-coldbrew/options/blob/main/options.go#L92>)
 
 ```go
 func (o *Options) Load(key any) (any, bool)
@@ -187,7 +212,7 @@ func (o *Options) Load(key any) (any, bool)
 Load is a sync.Map\-compatible alias for Get. Only string keys are supported; non\-string keys return \(nil, false\).
 
 <a name="Options.Range"></a>
-### func \(\*Options\) [Range](<https://github.com/go-coldbrew/options/blob/main/options.go#L119>)
+### func \(\*Options\) [Range](<https://github.com/go-coldbrew/options/blob/main/options.go#L110>)
 
 ```go
 func (o *Options) Range(f func(key, value any) bool)
@@ -195,13 +220,60 @@ func (o *Options) Range(f func(key, value any) bool)
 
 Range calls f sequentially for each key and value. If f returns false, Range stops the iteration. The callback may safely call Add/Del on the same Options instance.
 
+<a name="Options.RangeSlice"></a>
+### func \(\*Options\) [RangeSlice](<https://github.com/go-coldbrew/options/blob/main/options.go#L129>)
+
+```go
+func (o *Options) RangeSlice(f func(key, value any) bool)
+```
+
+RangeSlice calls f sequentially for each key and value, using a slice snapshot. This is more efficient than Range for small maps and matches the iteration pattern used by LogFields.
+
 <a name="Options.Store"></a>
-### func \(\*Options\) [Store](<https://github.com/go-coldbrew/options/blob/main/options.go#L93>)
+### func \(\*Options\) [Store](<https://github.com/go-coldbrew/options/blob/main/options.go#L84>)
 
 ```go
 func (o *Options) Store(key, value any)
 ```
 
 Store is a sync.Map\-compatible alias for Add. Only string keys are supported; non\-string keys are silently ignored.
+
+<a name="RequestContext"></a>
+## type [RequestContext](<https://github.com/go-coldbrew/options/blob/main/request_context.go#L7-L10>)
+
+RequestContext holds both request\-scoped options and log\-scoped fields in a single context value, reducing context.WithValue allocations from 2 to 1.
+
+```go
+type RequestContext struct {
+    // contains filtered or unexported fields
+}
+```
+
+<a name="RequestContextFromContext"></a>
+### func [RequestContextFromContext](<https://github.com/go-coldbrew/options/blob/main/request_context.go#L16>)
+
+```go
+func RequestContextFromContext(ctx context.Context) *RequestContext
+```
+
+RequestContextFromContext retrieves the RequestContext from ctx. Returns nil if not present.
+
+<a name="RequestContext.LogFields"></a>
+### func \(\*RequestContext\) [LogFields](<https://github.com/go-coldbrew/options/blob/main/request_context.go#L41>)
+
+```go
+func (rc *RequestContext) LogFields() *Options
+```
+
+LogFields returns the Options used for log fields, creating if needed.
+
+<a name="RequestContext.Opts"></a>
+### func \(\*RequestContext\) [Opts](<https://github.com/go-coldbrew/options/blob/main/request_context.go#L33>)
+
+```go
+func (rc *RequestContext) Opts() *Options
+```
+
+Opts returns the Options, creating if needed.
 
 Generated by [gomarkdoc](<https://github.com/princjef/gomarkdoc>)
