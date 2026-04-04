@@ -2,6 +2,7 @@ package options
 
 import (
 	"context"
+	"maps"
 	"sync"
 )
 
@@ -10,10 +11,6 @@ import (
 const SupportPackageIsVersion1 = true
 
 type contextKey string
-
-var (
-	optionsKey contextKey = "ColdBrewOptions"
-)
 
 // Options are request options passed from ColdBrew to server.
 // Uses RWMutex + map instead of sync.Map since Options is per-request
@@ -26,10 +23,8 @@ type Options struct {
 // FromContext fetches options from provided context.
 // If no options are found, it returns nil.
 func FromContext(ctx context.Context) *Options {
-	if h := ctx.Value(optionsKey); h != nil {
-		if options, ok := h.(*Options); ok {
-			return options
-		}
+	if rc := RequestContextFromContext(ctx); rc != nil {
+		return rc.opts
 	}
 	return nil
 }
@@ -41,12 +36,8 @@ func AddToOptions(ctx context.Context, key string, value any) context.Context {
 	if key == "" {
 		return ctx
 	}
-	h := FromContext(ctx)
-	if h == nil {
-		h = &Options{}
-		ctx = context.WithValue(ctx, optionsKey, h)
-	}
-	h.Add(key, value)
+	ctx, rc := getOrCreateRequestContext(ctx)
+	rc.Opts().Add(key, value)
 	return ctx
 }
 
@@ -123,12 +114,35 @@ func (o *Options) Range(f func(key, value any) bool) {
 		return
 	}
 	snapshot := make(map[string]any, len(o.m))
-	for k, v := range o.m {
-		snapshot[k] = v
-	}
+	maps.Copy(snapshot, o.m)
 	o.mu.RUnlock()
 	for k, v := range snapshot {
 		if !f(k, v) {
+			break
+		}
+	}
+}
+
+// RangeSlice calls f sequentially for each key and value, using a slice
+// snapshot. This is more efficient than Range for small maps and matches
+// the iteration pattern used by LogFields.
+func (o *Options) RangeSlice(f func(key, value any) bool) {
+	o.mu.RLock()
+	if len(o.m) == 0 {
+		o.mu.RUnlock()
+		return
+	}
+	type kv struct {
+		k string
+		v any
+	}
+	entries := make([]kv, 0, len(o.m))
+	for k, v := range o.m {
+		entries = append(entries, kv{k, v})
+	}
+	o.mu.RUnlock()
+	for _, e := range entries {
+		if !f(e.k, e.v) {
 			break
 		}
 	}
